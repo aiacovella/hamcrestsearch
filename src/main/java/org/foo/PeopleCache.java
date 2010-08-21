@@ -1,19 +1,39 @@
 package org.foo;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import org.hamcrest.Matcher;
+import java.util.*;
 
-/**
- * Created by IntelliJ IDEA.
- * User: al
- * Date: Aug 4, 2010
- * Time: 5:28:18 PM
- * To change this template use File | Settings | File Templates.
- */
-public class PeopleCache {
-    private static PeopleCache ourInstance = new PeopleCache();
+final class PeopleCache {
+    private static final PeopleCache instance = new PeopleCache();
+    private final List<Person> people = buildCache();
 
-    public static PeopleCache getInstance() {
-        return ourInstance;
+    private PeopleCache() {}
+
+    public static PeopleCache instance() {return instance;}
+
+    public Iterable<Person> queryForPeople(Matcher<Person> matcher){
+        return (matcher == null ? people : Iterables.filter(people, new MatchingPredicate<Person>(matcher)));
     }
 
-    private PeopleCache() {
+    private List<Person> buildCache() {
+        final List<Person> people = new ArrayList<Person>();
+        people.add(new Person("John", "Smith", 45, 150000));
+        people.add(new Person("Bob", "Smith", 35, 75000));
+        people.add(new Person("Bob", "Gordon", 37, 80000));
+        people.add(new Person("Tom", "Barry", 54, 100000));
+        return people;
+    }
+
+    class MatchingPredicate<Person> implements Predicate<Person>
+    {
+        private final Matcher<Person> matcher;
+
+        MatchingPredicate(final Matcher<Person> matcher) { this.matcher = matcher;}
+
+        public boolean apply(final Person input) { return matcher.matches(input); }
     }
 }
+
+
+
